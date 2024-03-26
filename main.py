@@ -45,4 +45,6 @@ print(f"EPW File | {str(epw_file.resolve())} [exist={epw_file.exists()}]")
 # -- Mess with the IDF file
 IDF.setiddname(idd_file)
 idf_model = IDF(idf_file, epw_file)
-# idf_model.run()
+
+# TODO: Wrap all this inside a FastAPI app, pass JSON back when complete....
+idf_model.run()

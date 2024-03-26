@@ -11,17 +11,17 @@ RUN pip3 install eppy
 RUN pip3 install python-dotenv
 RUN pip3 install fastapi
 
-
-# Copy your Python scripts into the container
-COPY main.py /EnergyPlus-23.2.0-7636e6b3e9-Linux-Ubuntu20.04-x86_64/
-COPY WeatherData/ /EnergyPlus-23.2.0-7636e6b3e9-Linux-Ubuntu20.04-x86_64/WeatherData/
-COPY Exercise1A.idf /EnergyPlus-23.2.0-7636e6b3e9-Linux-Ubuntu20.04-x86_64/
+# Copy all files into the container
+ARG ENERGYPLUS_DIRECTORY=EnergyPlus-23.2.0-7636e6b3e9-Linux-Ubuntu20.04-x86_64
+COPY main.py /${ENERGYPLUS_DIRECTORY}/
+COPY Exercise1A.idf /${ENERGYPLUS_DIRECTORY}/
+COPY WeatherData/ /${ENERGYPLUS_DIRECTORY}/WeatherData/
 
 # Set working directory
-WORKDIR /EnergyPlus-23.2.0-7636e6b3e9-Linux-Ubuntu20.04-x86_64
+WORKDIR /${ENERGYPLUS_DIRECTORY}
 
-ENV ENERGYPLUS_INSTALL_DIR=/EnergyPlus-23.2.0-7636e6b3e9-Linux-Ubuntu20.04-x86_64
+# Set the environment variable for EnergyPlus
+ENV ENERGYPLUS_INSTALL_DIR=/${ENERGYPLUS_DIRECTORY}
 
-# Set the entrypoint to your Python script
-# CMD ["EnergyPlus", "--help"]
+# Set the entrypoint to the execution
 CMD ["python3", "main.py"]
