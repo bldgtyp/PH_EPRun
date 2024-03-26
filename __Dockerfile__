@@ -1,0 +1,64 @@
+FROM ubuntu:latest
+
+# Install wget and python3-pip (for installing EpPy)
+RUN apt-get update && \
+    apt-get install -y wget python3-pip && \
+    rm -rf /var/lib/apt/lists/*
+
+    
+    # Download and install EnergyPlus
+    # RUN wget --quiet https://github.com/NREL/EnergyPlus/releases/download/v23.1.0/ EnergyPlus-23.1.0-87ed9199d4-Linux-Ubuntu22.04-x86_64.sh && \
+    #     chmod +x  EnergyPlus-23.1.0-87ed9199d4-Linux-Ubuntu22.04-x86_64.sh && \
+    #     echo "y" | ./ EnergyPlus-23.1.0-87ed9199d4-Linux-Ubuntu22.04-x86_64.sh && \
+    #     rm  EnergyPlus-23.1.0-87ed9199d4-Linux-Ubuntu22.04-x86_64.sh
+    
+# Set working directory
+WORKDIR /usr/local/EnergyPlus-23-1-0
+# Download EnergyPlus .tar.gz file
+
+ARG ENERGYPLUS_VERSION_NUMBER="23.1.0"
+ARG ENERGYPLUS_VERSION_STAMP="87ed9199d4"
+ARG ENERGYPLUS_URL="https://github.com/NREL/EnergyPlus/releases/download/v${ENERGYPLUS_VERSION_NUMBER}/EnergyPlus-${ENERGYPLUS_VERSION_NUMBER}-${ENERGYPLUS_VERSION_STAMP}-Linux-Ubuntu22.04-arm64.tar.gz"
+RUN wget --quiet ${ENERGYPLUS_URL} -O energyplus.tar.gz
+
+# Extract EnergyPlus files
+RUN tar -xzvf energyplus.tar.gz && \
+    rm energyplus.tar.gz
+
+# Set environment variable for EnergyPlus installation directory
+ENV ENERGYPLUS_INSTALL_DIR="/usr/local/EnergyPlus-${ENERGYPLUS_VERSION_NUMBER}"
+
+# Set PATH environment variable to include EnergyPlus executable
+ENV PATH="${ENERGYPLUS_INSTALL_DIR}:$PATH"
+
+# Print EnergyPlus version
+RUN EnergyPlus --version
+
+# RUN wget --quiet https://github.com/NREL/EnergyPlus/releases/download/v23.1.0/EnergyPlus-23.1.0-87ed9199d4-Linux-Ubuntu22.04-arm64.tar.gz && \
+#     chmod +x EnergyPlus-23.1.0-87ed9199d4-Linux-Ubuntu22.04-arm64.tar.gz && \
+#     tar -xzf EnergyPlus-23.1.0-87ed9199d4-Linux-Ubuntu22.04-arm64.tar.gz -C /usr/local/ && \
+#     echo "y" | ./EnergyPlus-23.1.0-87ed9199d4-Linux-Ubuntu22.04-arm64.tar.gz && \
+#     rm EnergyPlus-23.1.0-87ed9199d4-Linux-Ubuntu22.04-arm64.tar.gz
+
+# Install Python dependencies
+# RUN pip3 install eppy
+# RUN pip3 install python-dotenv
+# RUN pip3 install fastapi
+
+# # Set environment variables
+# ENV ENERGYPLUS_INSTALL_DIR=/usr/local/EnergyPlus-23-1-0
+
+# # Set working directory
+# WORKDIR /usr/local/EnergyPlus-23-1-0
+
+# # Copy main.py into the Docker image
+# COPY main.py .
+# COPY WeatherData/ ./WeatherData/
+# COPY Exercise1A.idf .
+
+# # Expose any necessary ports
+# # EXPOSE <port>
+
+# # Define the command to run main.py
+# CMD ["python3", "main.py"]
+
