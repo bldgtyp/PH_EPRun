@@ -2,26 +2,32 @@
 # https://hub.docker.com/r/nrel/energyplus/tags
 FROM nrel/energyplus:23.2.0
 
-# Install any additional dependencies required for your Python scripts
-# For example, if you need Python and pip:
+# Set the Paths
+ARG ENERGYPLUS_DIRECTORY=EnergyPlus-23.2.0-7636e6b3e9-Linux-Ubuntu20.04-x86_64
+ARG APP_DIRECTORY=app
+
+# Set the environment variables for the Paths
+ENV PATH_ENERGY_PLUS_INSTALL=/${ENERGYPLUS_DIRECTORY}
+ENV PATH_APP=/${APP_DIRECTORY}
+
+# Install Python
 RUN apt-get update && apt-get install -y python3 python3-pip
 
-# Install Python dependencies
-RUN pip3 install eppy
-RUN pip3 install python-dotenv
-RUN pip3 install fastapi
+# Change to the app folder
+WORKDIR /${APP_DIRECTORY}
 
-# Copy all files into the container
-ARG ENERGYPLUS_DIRECTORY=EnergyPlus-23.2.0-7636e6b3e9-Linux-Ubuntu20.04-x86_64
-COPY main.py /${ENERGYPLUS_DIRECTORY}/
+# Install Python dependencies
+COPY ./requirements.txt /${APP_DIRECTORY}
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
+
+# Copy the python files
+COPY main.py /${APP_DIRECTORY}
+
+# Copy the EnergyPlus files
 COPY Exercise1A.idf /${ENERGYPLUS_DIRECTORY}/
 COPY WeatherData/ /${ENERGYPLUS_DIRECTORY}/WeatherData/
 
-# Set working directory
-WORKDIR /${ENERGYPLUS_DIRECTORY}
-
-# Set the environment variable for EnergyPlus
-ENV ENERGYPLUS_INSTALL_DIR=/${ENERGYPLUS_DIRECTORY}
-
 # Set the entrypoint to the execution
-CMD ["python3", "main.py"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+
+# To Build: "docker-compose up --build"

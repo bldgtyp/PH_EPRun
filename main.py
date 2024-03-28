@@ -1,8 +1,7 @@
-print("- " * 25)
-print("Starting main.py")
-
 import os
 import pathlib
+
+from dataclasses import dataclass
 
 try:
     from dotenv import load_dotenv
@@ -11,40 +10,51 @@ try:
 except ImportError as e:
     print(e)
 
-from eppy import modeleditor
-from eppy.modeleditor import IDF
+# from eppy import modeleditor
+# from eppy.modeleditor import IDF
+
+from fastapi import FastAPI, Response
+
+app = FastAPI()
 
 
-def list_files(start_path):
-    for root, dirs, files in os.walk(start_path):
-        level = root.replace(str(start_path), "").count(os.sep)
-        indent = " " * 4 * (level)
-        print("{}{}/".format(indent, os.path.basename(root)))
-        sub_indent = " " * 4 * (level + 1)
-        for file in files:
-            if ".idd" in str(file):
-                print("{}{}".format(sub_indent, file))
+@dataclass
+class AppPath:
+    path: pathlib.Path
+    exists: bool
 
 
-print("os.getcwd():", os.getcwd())
-# # -- Setup the IDD and IDF Files needed
-ep_install_dir = pathlib.Path(os.environ.get("ENERGYPLUS_INSTALL_DIR") or ".")
-print(
-    f"EnergyPlus Directory | {ep_install_dir.resolve()} [exists={ep_install_dir.exists()}]"
-)
+@dataclass
+class AppPaths:
+    os_getcwd: AppPath
+    ep_install_dir: AppPath
+    idd_file: AppPath
+    idf_file: AppPath
+    epw_file: AppPath
 
-idd_file = ep_install_dir / "Energy+.idd"
-print(f"IDD File | {str(idd_file.resolve())} [exists={idd_file.exists()}]")
 
-idf_file = pathlib.Path("Exercise1A.idf")
-print(f"IDF File | {str(idf_file.resolve())} [exists={idf_file.exists()}]")
+@app.get("/", response_model=AppPaths)
+def get_root() -> AppPaths:
+    cwd = pathlib.Path(os.getcwd())
+    ep_install_dir = pathlib.Path(os.environ.get("PATH_ENERGY_PLUS_INSTALL") or ".")
+    idd_file = ep_install_dir / "Energy+.idd"
+    idf_file = pathlib.Path("Exercise1A.idf")
+    epw_file = pathlib.Path("WeatherData/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw")
 
-epw_file = pathlib.Path("WeatherData/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw")
-print(f"EPW File | {str(epw_file.resolve())} [exist={epw_file.exists()}]")
+    d = AppPaths(
+        AppPath(cwd, cwd.exists()),
+        AppPath(ep_install_dir, ep_install_dir.exists()),
+        AppPath(idd_file, idd_file.exists()),
+        AppPath(idf_file, idf_file.exists()),
+        AppPath(epw_file, epw_file.exists()),
+    )
+    return d
 
-# -- Mess with the IDF file
-IDF.setiddname(idd_file)
-idf_model = IDF(idf_file, epw_file)
 
-# TODO: Wrap all this inside a FastAPI app, pass JSON back when complete....
-idf_model.run()
+# # # -- Setup the IDD and IDF Files needed
+# # -- Mess with the IDF file
+# IDF.setiddname(idd_file)
+# idf_model = IDF(idf_file, epw_file)
+
+# # TODO: Wrap all this inside a FastAPI app, pass JSON back when complete....
+# idf_model.run()
