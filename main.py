@@ -1,6 +1,8 @@
 import os
 import pathlib
 
+from typing import List
+
 from dataclasses import dataclass
 
 try:
@@ -31,28 +33,25 @@ class AppPaths:
     idd_file: AppPath
     idf_file: AppPath
     epw_file: AppPath
+    app_files: List[str]
 
 
 @app.get("/", response_model=AppPaths)
 def get_root() -> AppPaths:
     cwd = pathlib.Path(os.getcwd())
-    app_dir = pathlib.Path(os.environ.get("PATH_APP") or ".").resolve()
-    ep_install_dir = pathlib.Path(os.environ.get("PATH_ENERGY_PLUS_INSTALL") or ".")
+    app_dir = pathlib.Path(os.environ.get("PATH_APP") or "/").resolve()
+    ep_install_dir = pathlib.Path(os.environ.get("PATH_ENERGY_PLUS_INSTALL") or "/")
     idd_file = ep_install_dir / "Energy+.idd"
-    idf_file = app_dir / pathlib.Path("Exercise1A.idf").resolve()
-    epw_file = (
-        app_dir
-        / pathlib.Path(
-            "WeatherData/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
-        ).resolve()
-    )
+    idf_file = app_dir / "Exercise1A.idf"
+    epw_file = app_dir / "WeatherData" / "USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
 
     d = AppPaths(
-        AppPath(cwd, cwd.exists()),
-        AppPath(ep_install_dir, ep_install_dir.exists()),
-        AppPath(idd_file, idd_file.exists()),
-        AppPath(idf_file, idf_file.exists()),
-        AppPath(epw_file, epw_file.exists()),
+        AppPath(cwd.resolve(), cwd.resolve().exists()),
+        AppPath(ep_install_dir.resolve(), ep_install_dir.resolve().exists()),
+        AppPath(idd_file.resolve(), idd_file.resolve().exists()),
+        AppPath(idf_file.resolve(), idf_file.resolve().exists()),
+        AppPath(epw_file.resolve(), epw_file.resolve().exists()),
+        [f"{f.resolve()}" for f in app_dir.iterdir() if f.is_file()],
     )
     return d
 
