@@ -24,10 +24,11 @@ RUN pip install --no-cache-dir --upgrade -r requirements.txt
 COPY main.py /${APP_DIRECTORY}
 
 # Copy the EnergyPlus files
-COPY Exercise1A.idf /${ENERGYPLUS_DIRECTORY}/
-COPY WeatherData/ /${ENERGYPLUS_DIRECTORY}/WeatherData/
+COPY Exercise1A.idf /${APP_DIRECTORY}/
+COPY WeatherData/ /${APP_DIRECTORY}/WeatherData/
 
 # Set the entrypoint to the execution
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
 
 # To Build: "docker-compose up --build"
+# To Run: "docker run -d -p 8080:80 ph_ep_run"

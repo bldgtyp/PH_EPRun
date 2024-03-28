@@ -34,6 +34,7 @@ class AppPaths:
     idf_file: AppPath
     epw_file: AppPath
     app_files: List[str]
+    ep_files: List[str]
 
 
 @app.get("/", response_model=AppPaths)
@@ -52,6 +53,7 @@ def get_root() -> AppPaths:
         AppPath(idf_file.resolve(), idf_file.resolve().exists()),
         AppPath(epw_file.resolve(), epw_file.resolve().exists()),
         [f"{f.resolve()}" for f in app_dir.iterdir() if f.is_file()],
+        [f"{f.resolve()}" for f in ep_install_dir.iterdir() if f.is_file()],
     )
     return d
 
