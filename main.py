@@ -36,10 +36,16 @@ class AppPaths:
 @app.get("/", response_model=AppPaths)
 def get_root() -> AppPaths:
     cwd = pathlib.Path(os.getcwd())
+    app_dir = pathlib.Path(os.environ.get("PATH_APP") or ".").resolve()
     ep_install_dir = pathlib.Path(os.environ.get("PATH_ENERGY_PLUS_INSTALL") or ".")
     idd_file = ep_install_dir / "Energy+.idd"
-    idf_file = pathlib.Path("Exercise1A.idf")
-    epw_file = pathlib.Path("WeatherData/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw")
+    idf_file = app_dir / pathlib.Path("Exercise1A.idf").resolve()
+    epw_file = (
+        app_dir
+        / pathlib.Path(
+            "WeatherData/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
+        ).resolve()
+    )
 
     d = AppPaths(
         AppPath(cwd, cwd.exists()),
