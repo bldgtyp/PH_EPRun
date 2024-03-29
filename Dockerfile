@@ -1,34 +1,50 @@
 # Use the existing EnergyPlus container as the base image
 # https://hub.docker.com/r/nrel/energyplus/tags
+# https://github.com/NREL/docker-energyplus
 FROM nrel/energyplus:23.2.0
 
-# Set the Paths
+# -----------------------------------------------------------------------------
+# -- Paths & Env. Variables
 ARG ENERGYPLUS_DIRECTORY=EnergyPlus-23.2.0-7636e6b3e9-Linux-Ubuntu20.04-x86_64
 ARG APP_DIRECTORY=app
 
-# Set the environment variables for the Paths
 ENV PATH_ENERGY_PLUS_INSTALL=/${ENERGYPLUS_DIRECTORY}
 ENV PATH_APP=/${APP_DIRECTORY}
 
-# Install Python
+# -----------------------------------------------------------------------------
+# -- Python
+# -- NOT WORKING: Install Python3.10 
+# RUN export DEBIAN_FRONTEND=noninteractive TZ=US && \
+#     apt-get update && \
+#     apt-get -y install python3.10 python3-pip
+
+# Install Python3.8
 RUN apt-get update && apt-get install -y python3 python3-pip
 
-# Change to the app folder
+# -- Upgrade pip
+RUN pip install --upgrade pip
+
+# -- Install Python dependencies
 WORKDIR /${APP_DIRECTORY}
+COPY requirements.txt /${APP_DIRECTORY}
+RUN pip install -r requirements.txt
 
-# Install Python dependencies
-COPY ./requirements.txt /${APP_DIRECTORY}
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
-
-# Copy the python files
+# -- Copy the python files
 COPY main.py /${APP_DIRECTORY}
 
+# -----------------------------------------------------------------------------
+# -- EnergyPlus
 # Copy the EnergyPlus files
 COPY Exercise1A.idf /${APP_DIRECTORY}/
 COPY WeatherData/ /${APP_DIRECTORY}/WeatherData/
 
-# Set the entrypoint to the execution
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+# -----------------------------------------------------------------------------
+# -- Uvicorn
+EXPOSE 80
 
-# To Build: "docker-compose up --build"
-# To Run: "docker run -d -p 8080:80 ph_ep_run"
+# Set the entrypoint to the execution
+CMD ["python3", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+
+# -----------------------------------------------------------------------------
+# -- Uvicorn
+# To Build & Run: "docker-compose up --build"

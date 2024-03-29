@@ -1,7 +1,10 @@
+# -*- coding: utf-8 -*-
+# -*- Python Version: 3.8 -*-
+
 import os
 import pathlib
 
-from typing import List
+from typing import List, Dict
 
 from dataclasses import dataclass
 
@@ -12,8 +15,8 @@ try:
 except ImportError as e:
     print(e)
 
-# from eppy import modeleditor
-# from eppy.modeleditor import IDF
+from eppy import modeleditor
+from eppy.modeleditor import IDF
 
 from fastapi import FastAPI, Response
 
@@ -58,10 +61,15 @@ def get_root() -> AppPaths:
     return d
 
 
-# # # -- Setup the IDD and IDF Files needed
-# # -- Mess with the IDF file
-# IDF.setiddname(idd_file)
-# idf_model = IDF(idf_file, epw_file)
+@app.get("/run")
+def run_simulation() -> Dict[str, str]:
+    ep_install_dir = pathlib.Path(os.environ.get("PATH_ENERGY_PLUS_INSTALL") or "/")
+    app_dir = pathlib.Path(os.environ.get("PATH_APP") or "/").resolve()
+    idd_file = ep_install_dir / "Energy+.idd"
+    idf_file = app_dir / "Exercise1A.idf"
+    epw_file = app_dir / "WeatherData" / "USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
 
-# # TODO: Wrap all this inside a FastAPI app, pass JSON back when complete....
-# idf_model.run()
+    IDF.setiddname(idd_file)
+    idf_model = IDF(idf_file, epw_file)
+    idf_model.run()
+    return {"message": "Simulation Complete!"}
