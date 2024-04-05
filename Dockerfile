@@ -13,13 +13,10 @@ ENV PATH_APP=/${APP_DIRECTORY}
 
 # -----------------------------------------------------------------------------
 # -- Python
-# -- NOT WORKING: Install Python3.10 
-# RUN export DEBIAN_FRONTEND=noninteractive TZ=US && \
-#     apt-get update && \
-#     apt-get -y install python3.10 python3-pip
-
-# Install Python3.8
-RUN apt-get update && apt-get install -y python3 python3-pip
+# Install Python3.8 (since we're using Ubuntu 20.04)
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip
 
 # -- Upgrade pip
 RUN pip install --upgrade pip
